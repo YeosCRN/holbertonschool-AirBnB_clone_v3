@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""app.py to connect to API"""
+"""This app.py file is used to connect to a Flask API."""
 import os
 from models import storage
 from api.v1.views import app_views
