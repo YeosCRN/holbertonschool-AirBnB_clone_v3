@@ -1,99 +1,76 @@
 #!/usr/bin/python3
-""" objects that handles all default RestFul API actions for cities """
-from models.city import City
-from models.state import State
-from models import storage
+"""City flask handler"""
+
+
 from api.v1.views import app_views
-from flask import abort, jsonify, make_response, request
-from flasgger.utils import swag_from
+from flask import jsonify, abort, request, make_response
+from models import storage
+from models.state import State
+from models.city import City
 
 
 @app_views.route('/states/<state_id>/cities', methods=['GET'],
                  strict_slashes=False)
-@swag_from('documentation/city/cities_by_state.yml', methods=['GET'])
-def get_cities(state_id):
-    """
-    Retrieves the list of all cities objects
-    of a specific State, or a specific city
-    """
-    list_cities = []
+def retrieves_cities_by_state_id(state_id):
     state = storage.get(State, state_id)
     if not state:
         abort(404)
-    for city in state.cities:
-        list_cities.append(city.to_dict())
-
-    return jsonify(list_cities)
+    all_cities = [all_cities.to_dict() for all_cities in state.cities]
+    return jsonify(all_cities)
 
 
-@app_views.route('/cities/<city_id>/', methods=['GET'], strict_slashes=False)
-@swag_from('documentation/city/get_city.yml', methods=['GET'])
-def get_city(city_id):
-    """
-    Retrieves a specific city based on id
-    """
+@app_views.route('/cities/<city_id>', methods=['GET'], strict_slashes=False)
+def retrieves_city_by_id(city_id):
     city = storage.get(City, city_id)
-    if not city:
-        abort(404)
-    return jsonify(city.to_dict())
+    if city:
+        return jsonify(city.to_dict())
+    abort(404)
 
 
 @app_views.route('/cities/<city_id>', methods=['DELETE'], strict_slashes=False)
-@swag_from('documentation/city/delete_city.yml', methods=['DELETE'])
-def delete_city(city_id):
-    """
-    Deletes a city based on id provided
-    """
+def deletes_city_by_id(city_id):
     city = storage.get(City, city_id)
-
     if not city:
         abort(404)
-    storage.delete(city)
+    city.delete()
     storage.save()
-
-    return make_response(jsonify({}), 200)
+    return jsonify({}), 200
 
 
 @app_views.route('/states/<state_id>/cities', methods=['POST'],
                  strict_slashes=False)
-@swag_from('documentation/city/post_city.yml', methods=['POST'])
-def post_city(state_id):
-    """
-    Creates a City
-    """
+def create_city(state_id):
     state = storage.get(State, state_id)
     if not state:
         abort(404)
-    if not request.get_json():
-        abort(400, description="Not a JSON")
-    if 'name' not in request.get_json():
-        abort(400, description="Missing name")
 
-    data = request.get_json()
-    instance = City(**data)
-    instance.state_id = state.id
-    instance.save()
-    return make_response(jsonify(instance.to_dict()), 201)
+    city_dict = request.get_json()
+    if not city_dict:
+        abort(400, 'Not a JSON')
+
+    if 'name' not in city_dict.keys():
+        abort(400, 'Missing name')
+
+    new_city = City(**city_dict)
+    setattr(new_city, 'state_id', state_id)
+    new_city.save()
+    return jsonify(new_city.to_dict()), 201
 
 
 @app_views.route('/cities/<city_id>', methods=['PUT'], strict_slashes=False)
-@swag_from('documentation/city/put_city.yml', methods=['PUT'])
-def put_city(city_id):
-    """
-    Updates a City
-    """
+def update_city_by_id(city_id):
     city = storage.get(City, city_id)
     if not city:
         abort(404)
 
-    if not request.get_json():
-        abort(400, description="Not a JSON")
+    body = request.get_json()
+    if not body:
+        abort(400, 'Not a JSON')
 
-    ignore = ['id', 'state_id', 'created_at', 'updated_at']
-
-    data = request.get_json()
-    for key, value in data.items():
-        if key not in ignore:
+    for key, value in body.items():
+        if key in ['id', 'created_at', 'updated_at']:
+            continue
+        else:
             setattr(city, key, value)
     storage.save()
     return make_response(jsonify(city.to_dict()), 200)
