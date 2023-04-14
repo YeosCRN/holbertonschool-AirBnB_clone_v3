@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-"""s"""
+"""Create an endpoint that retrieves the
+number of each objects by type"""
 
 
 from api.v1.views import app_views

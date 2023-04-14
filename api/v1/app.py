@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""d"""
+""" function that start the Flask web Aplication"""
 import os
 from models import storage
 from api.v1.views import app_views
