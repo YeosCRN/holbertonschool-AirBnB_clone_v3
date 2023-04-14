@@ -91,4 +91,4 @@ def put_amenity(amenity_id):
         if key not in ignore:
             setattr(amenity, key, value)
     storage.save()
-    return make_response(jsonify(amenity.to_dict()), 200), **kwargs)
+    return make_response(jsonify(amenity.to_dict()), 200)

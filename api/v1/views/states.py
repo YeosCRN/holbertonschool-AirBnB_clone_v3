@@ -1,21 +1,10 @@
 #!/usr/bin/python3
-""" holds class State"""
-from flasgger.utils import swag_from
-from flask import abort, jsonify, make_response, request
-from api.v1.views import app_views
-from models import storage
-from models.state import State
-import models
-from models.base_model import BaseModel, Base
-from models.city import City
-from os import getenv
-import sqlalchemy
-from sqlalchemy import Column, String, ForeignKey
-from sqlalchemy.orm import relationship
-
-
-#!/usr/bin/python3
 """ objects that handle all default RestFul API actions for States """
+from models.state import State
+from models import storage
+from api.v1.views import app_views
+from flask import abort, jsonify, make_response, request
+from flasgger.utils import swag_from
 
 
 @app_views.route('/states', methods=['GET'], strict_slashes=False)
